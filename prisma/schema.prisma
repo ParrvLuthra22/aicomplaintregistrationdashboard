@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Complaint {
+  id                String    @id @default(cuid())
+  
+  // Core identifiers
+  phoneNumber       String
+  complaintId       String    @unique
+  status            String
+  resolutionStatus  String?
+  
+  // Timestamps
+  createdAt         DateTime
+  dueDate           DateTime?
+  closedAt          DateTime?
+  importedAt        DateTime  @default(now())
+
+  // Geography
+  state             String?
+  district          String?
+  city              String?
+  direction         String?
+  circle            String?
+  lsa               String?
+
+  // Complaint details
+  channel           String?
+  complaintType     String?
+  technology        String?
+  planType          String?
+  service           String?
+  subCategory       String?
+  userRemark        String?   @db.Text
+  nodalRemark       String?   @db.Text
+  extraInfo         String?   @db.Text
+
+  // Officer
+  officerId         String?
+  officerName       String?
+
+  // AI Engine 1 outputs (per-complaint)
+  aiSeverity        String?
+  aiSentiment       String?
+  aiSummary         String?   @db.Text
+  aiRootCause       String?   @db.Text
+  aiEscalationRisk  Float?
+  aiClusterCount    Int?
+  aiProcessed       Boolean   @default(false)
+  aiProcessedAt     DateTime?
+
+  @@index([status])
+  @@index([circle])
+  @@index([state])
+  @@index([subCategory])
+  @@index([officerId])
+  @@index([createdAt])
+  @@index([aiSeverity])
+}
+
+model PatternInsight {
+  id          String   @id @default(cuid())
+  generatedAt DateTime @default(now())
+  type        String   // "SPIKE" | "ANOMALY" | "OFFICER" | "SENTIMENT_DRIFT" | "SLA_RISK"
+  severity    String   // "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  title       String
+  description String   @db.Text
+  affectedZone     String?
+  affectedCategory String?
+  affectedOfficer  String?
+  dataWindow  String?  // e.g. "last_7_days"
+  metaJson    Json?    // raw numbers, counts, percentages
+
+  @@index([type])
+  @@index([generatedAt])
+  @@index([severity])
+}
