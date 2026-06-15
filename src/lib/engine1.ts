@@ -46,7 +46,7 @@ export async function analyzeComplaint(
   complaint: ComplaintInput
 ): Promise<AnalysisResult> {
   const completion = await groq.chat.completions.create({
-    model: "llama3-8b-8192",
+    model: "llama-3.1-8b-instant",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
@@ -55,5 +55,7 @@ export async function analyzeComplaint(
   });
 
   const content = completion.choices[0]?.message?.content ?? "";
-  return JSON.parse(content) as AnalysisResult;
+  const parsed = JSON.parse(content) as AnalysisResult;
+
+  return { ...parsed, escalationRisk: Number(parsed.escalationRisk) };
 }
